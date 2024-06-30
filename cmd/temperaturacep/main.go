@@ -10,6 +10,6 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello, World!"))
 	})
-	http.HandleFunc("/busca-cep", web.BuscaCepHandler)
+	http.HandleFunc("/clima", web.BuscaCepHandler)
 	http.ListenAndServe(":8080", nil)
 }

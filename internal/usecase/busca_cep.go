@@ -5,71 +5,105 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+
+	"github.com/jorgemarinho/temperatura-por-cep/internal/dto"
+	"github.com/jorgemarinho/temperatura-por-cep/internal/entity"
 )
 
-type ViaCEP struct {
-	Cep         string `json:"cep"`
-	Logradouro  string `json:"logradouro"`
-	Complemento string `json:"complemento"`
-	Bairro      string `json:"bairro"`
-	Localidade  string `json:"localidade"`
-	Uf          string `json:"uf"`
-	Ibge        string `json:"ibge"`
-	Gia         string `json:"gia"`
-	Ddd         string `json:"ddd"`
-	Siafi       string `json:"siafi"`
-}
-
-type BuscaCepInputDTO struct {
-	Cep string `json:"cep"`
-}
-
-type BuscaCepOutputDTO struct {
-	TempC float64 `json:"temp_C"`
-	TempF float64 `json:"temp_F"`
-	TempK float64 `json:"temp_K"`
-}
-
 type BuscaCepUseCase struct {
-	BuscaCepInputDTO BuscaCepInputDTO
+	BuscaCepInputDTO dto.BuscaCepInputDTO
 }
 
-func NewBuscaCepUseCase(buscaCepInputDTO BuscaCepInputDTO) *BuscaCepUseCase {
+func NewBuscaCepUseCase(buscaCepInputDTO dto.BuscaCepInputDTO) *BuscaCepUseCase {
 	return &BuscaCepUseCase{
 		BuscaCepInputDTO: buscaCepInputDTO,
 	}
 }
 
-func (b BuscaCepUseCase) Execute() (BuscaCepOutputDTO, error) {
+func (b BuscaCepUseCase) Execute() (dto.BuscaCepOutputDTO, error) {
 
 	if len(b.BuscaCepInputDTO.Cep) < 8 {
 		err := fmt.Errorf("CEP must have 8 digits")
-		return BuscaCepOutputDTO{}, err
+		return dto.BuscaCepOutputDTO{}, err
 	}
 
-	resp, err := http.Get("https://viacep.com.br/ws/" + b.BuscaCepInputDTO.Cep + "/json/")
+	cep, err := b.BuscaCep(b.BuscaCepInputDTO.Cep)
 
 	if err != nil {
-		return BuscaCepOutputDTO{}, err
+		return dto.BuscaCepOutputDTO{}, err
+	}
+
+	temperatura, err := b.BuscaTemperatura(cep.Localidade)
+
+	if err != nil {
+		return dto.BuscaCepOutputDTO{}, err
+	}
+
+	return dto.BuscaCepOutputDTO{
+		TempC: temperatura.TempC,
+		TempF: getTemperatureKelvin(temperatura.TempF),
+		TempK: getTemperatureFahrenheit(temperatura.TempK),
+	}, nil
+}
+
+func (b BuscaCepUseCase) BuscaCep(cep string) (*entity.Cep, error) {
+
+	resp, err := http.Get("https://viacep.com.br/ws/" + cep + "/json/")
+
+	if err != nil {
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		return BuscaCepOutputDTO{}, err
+		return nil, err
 	}
 
-	var c ViaCEP
+	var c entity.Cep
 	err = json.Unmarshal(body, &c)
 
 	if err != nil {
-		return BuscaCepOutputDTO{}, err
+		return nil, err
 	}
 
-	return BuscaCepOutputDTO{
-		TempC: b.TempC,
-		TempF: b.TempF,
-		TempK: b.TempK,
-	}, nil
+	return &c, nil
+}
+
+func (b BuscaCepUseCase) BuscaTemperatura(nomeCidade string) (*entity.Temperatura, error) {
+
+	apiKey := "8887ae192b2343f9a32114928240104"
+	returnNomeCidade := url.QueryEscape(nomeCidade)
+	url := fmt.Sprintf("http://api.weatherapi.com/v1/current.json?key=%s&q=%s", apiKey, returnNomeCidade)
+	resp, err := http.Get(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var t entity.Temperatura
+	err = json.Unmarshal(body, &t)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &t, nil
+}
+
+func getTemperatureFahrenheit(celsius float64) float64 {
+	return (celsius * 1.8) + 32
+}
+
+func getTemperatureKelvin(celsius float64) float64 {
+	return celsius + 273
 }
