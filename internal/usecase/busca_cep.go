@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -62,7 +63,14 @@ func (b BuscaCepUseCase) BuscaTemperatura(nomeCidade string) (*entity.Temperatur
 }
 
 func (b BuscaCepUseCase) makeHTTPRequestCep(url string) (*entity.Cep, error) {
-	resp, err := http.Get(url)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("error making HTTP request: %w", err)
 	}
