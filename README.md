@@ -29,6 +29,6 @@ Este repositório contém um sistema desenvolvido em Go que recebe um CEP válid
     Acesse o sistema em seu navegador ou utilizando ferramentas como cURL ou Postman: curl 
 
     ```
-    https://temperatura-por-cep-dkdiz5n6pq-uc.a.run.app
+    https://temperatura-por-cep-dkdiz5n6pq-uc.a.run.app/clima?cep=seu-cep-aqui
     ```
 
