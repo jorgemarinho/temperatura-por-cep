@@ -1,7 +1,7 @@
-#Sistema de Consulta de Clima por CEP#
+# Sistema de Consulta de Clima por CEP #
 
 Este repositório contém um sistema desenvolvido em Go que recebe um CEP válido de 8 dígitos, identifica a cidade correspondente e retorna o clima atual em Celsius, Fahrenheit e Kelvin. O sistema foi publicado no Google Cloud Run para fácil acesso e utilização.
-##Modelo de retorno do endPoint##
+## Modelo de retorno do endPoint ##
 ```
     Em caso de sucesso:
         Código HTTP: 200
@@ -14,13 +14,13 @@ Este repositório contém um sistema desenvolvido em Go que recebe um CEP válid
         Mensagem: cannot find zipcode
 ```
 
-##Como usar##
+## Como usar ##
 ```
     Execute o Docker Compose: docker-compose up
 
     Acesse o sistema em seu navegador ou utilizando ferramentas como cURL ou Postman: curl http://localhost:8080/clima?cep=seu-cep-aqui
 ```
-##Acesso ao serviço pelo Google Cloud##
+## Acesso ao serviço pelo Google Cloud ##
 ```
     Acesse o sistema em seu navegador ou utilizando ferramentas como cURL ou Postman: curl 
 ```
