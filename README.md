@@ -15,12 +15,20 @@ Este repositório contém um sistema desenvolvido em Go que recebe um CEP válid
 ```
 
 ## Como usar ##
-```
+
     Execute o Docker Compose: docker-compose up
 
-    Acesse o sistema em seu navegador ou utilizando ferramentas como cURL ou Postman: curl http://localhost:8080/clima?cep=seu-cep-aqui
-```
+    Acesse o sistema em seu navegador ou utilizando ferramentas como cURL ou Postman: curl
+    ```
+     http://localhost:8080/clima?cep=seu-cep-aqui
+    ```
+    
+
 ## Acesso ao serviço pelo Google Cloud ##
-```
+
     Acesse o sistema em seu navegador ou utilizando ferramentas como cURL ou Postman: curl 
-```
+
+    ```
+    http://gcr.io/go-exemplos/temperatura-por-cep
+    ```
+
