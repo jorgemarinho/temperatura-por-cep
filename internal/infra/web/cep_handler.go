@@ -31,7 +31,6 @@ func BuscaCepHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 

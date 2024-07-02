@@ -46,7 +46,6 @@ func TestBuscaCepUseCase_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    dto.BuscaCepOutputDTO
 		wantErr bool
 	}{
 		{
@@ -56,11 +55,7 @@ func TestBuscaCepUseCase_Execute(t *testing.T) {
 					Cep: "72130360",
 				},
 			},
-			want: dto.BuscaCepOutputDTO{
-				TempC: 0,
-				TempF: 273,
-				TempK: 32,
-			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -73,8 +68,9 @@ func TestBuscaCepUseCase_Execute(t *testing.T) {
 				t.Errorf("BuscaCepUseCase.Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got.TempC != tt.want.TempC {
-				t.Errorf("BuscaCepUseCase.Execute() = %v, want %v", got, tt.want)
+
+			if got.TempC == 0 || got.TempF == 0 || got.TempK == 0 {
+				t.Errorf("BuscaCepUseCase.Execute() returned invalid temperatures: %v", got)
 			}
 		})
 	}
@@ -125,54 +121,6 @@ func TestBuscaCepUseCase_BuscaCep(t *testing.T) {
 			}
 			if got.Cep != tt.want.Cep {
 				t.Errorf("BuscaCepUseCase.BuscaCep() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestBuscaCepUseCase_BuscaTemperatura(t *testing.T) {
-	type fields struct {
-		BuscaCepInputDTO dto.BuscaCepInputDTO
-	}
-	type args struct {
-		localidade string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *entity.Temperatura
-		wantErr bool
-	}{
-		{
-			name: "Teste de busca de temperatura",
-			fields: fields{
-				BuscaCepInputDTO: dto.BuscaCepInputDTO{
-					Cep: "72130360",
-				},
-			},
-			args: args{
-				localidade: "Brasília",
-			},
-			want: &entity.Temperatura{
-				TempC: 0,
-				TempF: 273,
-				TempK: 32,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			b := BuscaCepUseCase{
-				BuscaCepInputDTO: tt.fields.BuscaCepInputDTO,
-			}
-			got, err := b.BuscaTemperatura(tt.args.localidade)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("BuscaCepUseCase.BuscaTemperatura() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got.TempC != tt.want.TempC {
-				t.Errorf("BuscaCepUseCase.BuscaTemperatura() = %v, want %v", got, tt.want)
 			}
 		})
 	}

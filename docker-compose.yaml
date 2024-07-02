@@ -1,0 +1,7 @@
+version: '3.8'
+services:
+  temperaturacepapp:
+    build: .
+    ports:
+      - "8080:8080"
+    command: sh -c "cd cmd/temperaturacep && go run main.go"
