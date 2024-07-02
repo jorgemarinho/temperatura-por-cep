@@ -5,6 +5,7 @@ import (
 
 	"github.com/jorgemarinho/temperatura-por-cep/internal/dto"
 	"github.com/jorgemarinho/temperatura-por-cep/internal/entity"
+	"github.com/jorgemarinho/temperatura-por-cep/internal/usecase"
 )
 
 func TestNewBuscaCepUseCase(t *testing.T) {
@@ -14,7 +15,7 @@ func TestNewBuscaCepUseCase(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *BuscaCepUseCase
+		want *usecase.BuscaCepUseCase
 	}{
 		{
 			name: "Teste de criação de um novo caso de uso",
@@ -23,7 +24,7 @@ func TestNewBuscaCepUseCase(t *testing.T) {
 					Cep: "72130360",
 				},
 			},
-			want: &BuscaCepUseCase{
+			want: &usecase.BuscaCepUseCase{
 				BuscaCepInputDTO: dto.BuscaCepInputDTO{
 					Cep: "74130011",
 				},
@@ -32,7 +33,7 @@ func TestNewBuscaCepUseCase(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewBuscaCepUseCase(tt.args.buscaCepInputDTO); got == nil {
+			if got := usecase.NewBuscaCepUseCase(tt.args.buscaCepInputDTO); got == nil {
 				t.Errorf("NewBuscaCepUseCase() = %v, want %v", got, tt.want)
 			}
 		})
@@ -60,7 +61,7 @@ func TestBuscaCepUseCase_Execute(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b := BuscaCepUseCase{
+			b := usecase.BuscaCepUseCase{
 				BuscaCepInputDTO: tt.fields.BuscaCepInputDTO,
 			}
 			got, err := b.Execute()
@@ -111,7 +112,7 @@ func TestBuscaCepUseCase_BuscaCep(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			b := BuscaCepUseCase{
+			b := usecase.BuscaCepUseCase{
 				BuscaCepInputDTO: tt.fields.BuscaCepInputDTO,
 			}
 			got, err := b.BuscaCep(tt.args.cep)
