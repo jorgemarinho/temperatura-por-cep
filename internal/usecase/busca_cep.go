@@ -11,6 +11,7 @@ import (
 
 	"github.com/jorgemarinho/temperatura-por-cep/internal/dto"
 	"github.com/jorgemarinho/temperatura-por-cep/internal/entity"
+	"github.com/jorgemarinho/temperatura-por-cep/internal/errors"
 )
 
 const (
@@ -31,7 +32,7 @@ func NewBuscaCepUseCase(buscaCepInputDTO dto.BuscaCepInputDTO) *BuscaCepUseCase 
 
 func (b BuscaCepUseCase) Execute() (dto.BuscaCepOutputDTO, error) {
 	if !isValidCep(b.BuscaCepInputDTO.Cep) {
-		return dto.BuscaCepOutputDTO{}, fmt.Errorf("CEP must have 8 digits and only contain numbers")
+		return dto.BuscaCepOutputDTO{}, &errors.HTTPError{Code: http.StatusUnprocessableEntity, Message: "CEP must have 8 digits and only contain numbers"}
 	}
 
 	cep, err := b.BuscaCep(b.BuscaCepInputDTO.Cep)
@@ -72,18 +73,25 @@ func (b BuscaCepUseCase) makeHTTPRequestCep(url string) (*entity.Cep, error) {
 
 	resp, err := client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("error making HTTP request: %w", err)
+		return nil, &errors.HTTPError{Code: http.StatusInternalServerError, Message: "error making HTTP request"}
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %w", err)
+		return nil, &errors.HTTPError{Code: http.StatusInternalServerError, Message: "error reading response body"}
+	}
+
+	var tempResult map[string]interface{}
+	if err := json.Unmarshal(body, &tempResult); err == nil {
+		if errVal, ok := tempResult["erro"]; ok && errVal == "true" {
+			return nil, &errors.HTTPError{Code: http.StatusNotFound, Message: "can not find zipcode"}
+		}
 	}
 
 	var result entity.Cep
 	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, fmt.Errorf("error unmarshalling cep response: %w", err)
+		return nil, &errors.HTTPError{Code: http.StatusInternalServerError, Message: "error unmarshalling cep response"}
 	}
 
 	return &result, nil
@@ -92,13 +100,13 @@ func (b BuscaCepUseCase) makeHTTPRequestCep(url string) (*entity.Cep, error) {
 func (b BuscaCepUseCase) makeHTTPRequestTemperatura(url string) (*entity.Temperatura, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("error making HTTP request: %w", err)
+		return nil, &errors.HTTPError{Code: http.StatusInternalServerError, Message: "error making HTTP request"}
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %w", err)
+		return nil, &errors.HTTPError{Code: http.StatusInternalServerError, Message: "error reading response body"}
 	}
 
 	var response struct {
@@ -106,7 +114,7 @@ func (b BuscaCepUseCase) makeHTTPRequestTemperatura(url string) (*entity.Tempera
 	}
 
 	if err := json.Unmarshal(body, &response); err != nil {
-		return nil, fmt.Errorf("error unmarshalling temperatura response: %w", err)
+		return nil, &errors.HTTPError{Code: http.StatusInternalServerError, Message: "error unmarshalling temperatura response"}
 	}
 
 	return &response.Current, nil
